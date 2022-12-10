@@ -321,5 +321,27 @@ iptables -A INPUT -s 10.48.0.0/22 -m time --timestart 00:00 --timestop 06:59 --w
 iptables -A INPUT -s 10.48.0.0/22 -m time --timestart 16:01 --timestop 23:59 --weekdays Mon,Tue,Wed,Thu,Fri -j REJECT
 ```
 
+### Jawaban D.5
+Karena kita memiliki 2 Web Server, Loid ingin **Ostania** diatur sehingga setiap request dari client yang mengakses **Garden** dengan port 80 akan didistribusikan secara bergantian pada **SSS dan Garden** secara berurutan dan request dari client yang mengakses SSS dengan port 443 akan didistribusikan secara bergantian pada Garden dan SSS secara berurutan.
+
+
+```
+iptables -A PREROUTING -t nat -p tcp -d 10.48.7.226 --dport 80 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 10.48.7.226:80
+iptables -A PREROUTING -t nat -p tcp -d 10.48.7.226 --dport 80 -j DNAT --to-destination 10.48.7.227:80
+
+iptables -A PREROUTING -t nat -p tcp -d 10.48.7.227 --dport 443 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 10.48.7.227:443
+iptables -A PREROUTING -t nat -p tcp -d 10.48.7.227 --dport 443 -j DNAT --to-destination 10.48.7.226:443
+```
+### Jawaban D.6
+Karena Loid ingin tau **paket apa saja** yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level.
+
+Untuk melihat packet apa saja yang di-*drop*, kami menggunakan perintah `LOG --log-level 5` pada akhir perintah saat akan di-*drop*
+
+Contohnya pada DHCP Server(**WISE**) dan DNS Server(**Eden**): 
+```
+iptables -A INPUT -p icmp -m connlimit --connlimit-above 2 --connlimit-mask 0 -j LOG --log-level 5
+
+iptables -A INPUT -p icmp -m connlimit --connlimit-above 2 --connlimit-mask 0 -j DROP
+```
 ## Kendala
 Cukup kesulitan dalam routing karena kurang teliti.
