@@ -15,7 +15,7 @@
 Setelah kalian mempelajari semua modul yang telah diberikan, Loid ingin meminta bantuan untuk terakhir kalinya kepada kalian. Dan kalian dengan senang hati mau membantu Loid.
 
 (A)	Tugas pertama kalian yaitu membuat topologi jaringan sesuai dengan rancangan yang diberikan Loid dibawah ini:<br>
-![](image/topology.jpg)
+![](image/topology.jpg) <br>
 Keterangan : <br>	
 - Eden adalah DNS Server
 - WISE adalah DHCP Server
@@ -245,5 +245,76 @@ subnet 10.48.7.72 netmask 255.255.255.248 {}
 lakukan restart dengan `service bind9 restart`. <br>
 
 [Ostania sebagai DHCP Relay] <br>
+```bash
+apt update
+apt install isc-dhcp-relay -y
+echo '
+SERVERS="10.48.7.67"
+INTERFACES="eth2 eth3 eth1 eth0"
+OPTIONS=""
+' > /etc/default/isc-dhcp-relay
+service isc-dhcp-relay restart
+```
+
+[Westalis sebagai DHCP Relay] <br>
+```bash
+apt update
+apt install isc-dhcp-relay -y
+echo '
+SERVERS="10.48.7.67"
+INTERFACES="eth2 eth3 eth0 eth1"
+OPTIONS=""
+' > /etc/default/isc-dhcp-relay
+```
+service isc-dhcp-relay restart
+
+[Garden dan SSS adalah Web Server] <br>
+```bash
+apt update
+apt install apache2 -y
+service apache2 start
+echo "$HOSTNAME" > /var/www/html/index.html
+```
+
+### Jawaban D.1
+[Strix] <br>
+```bash
+IPETH0="$(ip -br a | grep eth0 | awk '{print $NF}' | cut -d'/' -f1)"
+iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source "$IPETH0" -s 10.48.0.0/21
+```
+### Jawaban D.2
+[Strix] <br>
+```bash
+iptables -A FORWARD -d 10.48.7.67 -i eth0 -p tcp --dport 80 -j DROP
+iptables -A FORWARD -d 10.48.7.67 -i eth0 -p tcp --dport 80 -j DROP
+```
+
+### Jawaban D.3
+[WISE] <br>
+Reject bila terdapat PING ICMP Lebih dari 2 <br>
+```bash
+iptables -A INPUT -p icmp -m connlimit --connlimit-above 2 --connlimit-mask 0 -j DROP
+```
+[Eden] <br>
+Reject bila terdapat PING ICMP Lebih dari 2 <br>
+```bash
+iptables -A INPUT -p icmp -m connlimit --connlimit-above 2 --connlimit-mask 0 -j DROP
+```
+
+### Jawaban D.
+[Eden] <br>
+[Forger] <br>
+```bash
+iptables -A INPUT -s 10.48.7.0/25 -m time --weekdays Sat,Sun -j REJECT
+iptables -A INPUT -s 10.48.7.0/25 -m time --timestart 00:00 --timestop 06:59 --weekdays Mon,Tue,Wed,Thu,Fri -j REJECT
+iptables -A INPUT -s 10.48.7.0/25 -m time --timestart 16:01 --timestop 23:59 --weekdays Mon,Tue,Wed,Thu,Fri -j REJECT
+```
+[Desmond] <br>
+```bash
+iptables -A INPUT -s 10.48.0.0/22 -m time --weekdays Sat,Sun -j REJECT
+iptables -A INPUT -s 10.48.0.0/22 -m time --timestart 00:00 --timestop 06:59 --weekdays Mon,Tue,Wed,Thu,Fri -j REJECT
+iptables -A INPUT -s 10.48.0.0/22 -m time --timestart 16:01 --timestop 23:59 --weekdays Mon,Tue,Wed,Thu,Fri -j REJECT
+```
 
 ## Kendala
+Cukup kesulitan dalam routing karena kurang teliti.
