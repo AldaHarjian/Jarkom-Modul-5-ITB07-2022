@@ -283,10 +283,15 @@ IPETH0="$(ip -br a | grep eth0 | awk '{print $NF}' | cut -d'/' -f1)"
 iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source "$IPETH0" -s 10.48.0.0/21
 ```
 ### Jawaban D.2
+Untuk melakukan drop TCP dan UDP ke DHCP server, kami menggunakan perintah atau rules seperti berikut ini pada 
 [Strix] <br>
-```bash
-iptables -A FORWARD -d 10.48.7.67 -i eth0 -p tcp --dport 80 -j DROP
-iptables -A FORWARD -d 10.48.7.67 -i eth0 -p tcp --dport 80 -j DROP
+```
+
+iptables -A FORWARD -d 10.48.7.243 -i eth0 -p tcp -j LOG --log-level 5
+iptables -A FORWARD -d 10.48.7.243 -i eth0 -p udp -j LOG --log-level 5
+
+iptables -A FORWARD -d 10.48.7.243 -i eth0 -p tcp -j DROP
+iptables -A FORWARD -d 10.48.7.243 -i eth0 -p udp -j DROP
 ```
 
 ### Jawaban D.3
