@@ -301,7 +301,7 @@ Reject bila terdapat PING ICMP Lebih dari 2 <br>
 iptables -A INPUT -p icmp -m connlimit --connlimit-above 2 --connlimit-mask 0 -j DROP
 ```
 
-### Jawaban D.
+### Jawaban D.4
 [Eden] <br>
 [Forger] <br>
 ```bash
